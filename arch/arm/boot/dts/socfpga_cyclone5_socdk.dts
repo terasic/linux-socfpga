@@ -69,6 +69,10 @@
 	};
 };
 
+&can0 {
+	status = "okay";
+};
+
 &gmac1 {
 	status = "okay";
 	phy-mode = "rgmii";
@@ -81,6 +85,7 @@
 	txc-skew-ps = <2600>;
 	rxdv-skew-ps = <0>;
 	rxc-skew-ps = <2000>;
+	max-frame-size = <3800>;
 };
 
 &gpio0 {
