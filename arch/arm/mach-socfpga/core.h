@@ -55,6 +55,8 @@
 #define SYSMGR_SILICON_ID1_ID_SHIFT 16
 #define SYSMGR_SILICON_ID1_ID_MASK 0xFFFF0000
 
+void socfpga_init_l2_ecc(void);
+
 extern void __iomem *sys_manager_base_addr;
 extern void __iomem *rst_manager_base_addr;
 extern void __iomem *sdr_ctl_base_addr;
