@@ -57,6 +57,7 @@
 
 void socfpga_init_l2_ecc(void);
 void socfpga_init_ocram_ecc(void);
+void socfpga_init_arria10_l2_ecc(void);
 
 extern void __iomem *sys_manager_base_addr;
 extern void __iomem *rst_manager_base_addr;
