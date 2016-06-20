@@ -153,7 +153,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 		return PTR_ERR(priv->l3reg);
 	}
 
-	priv->clk = of_clk_get(dev->of_node, 0);
+	priv->clk = devm_clk_get(dev, NULL);
 	if (IS_ERR(priv->clk)) {
 		dev_err(dev, "no clock specified\n");
 		return PTR_ERR(priv->clk);
@@ -194,7 +194,6 @@ static int alt_fpga_bridge_remove(struct platform_device *pdev)
 	fpga_bridge_unregister(&pdev->dev);
 
 	clk_disable_unprepare(priv->clk);
-	clk_put(priv->clk);
 
 	return 0;
 }
