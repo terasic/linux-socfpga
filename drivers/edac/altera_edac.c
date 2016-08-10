@@ -1844,7 +1844,7 @@ static int a10_eccmgr_irqdomain_map(struct irq_domain *d, unsigned int irq,
 	return 0;
 }
 
-struct irq_domain_ops a10_eccmgr_ic_ops = {
+static struct irq_domain_ops a10_eccmgr_ic_ops = {
 	.map = a10_eccmgr_irqdomain_map,
 	.xlate = irq_domain_xlate_twocell,
 };
