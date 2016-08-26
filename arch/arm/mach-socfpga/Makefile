@@ -6,4 +6,3 @@ obj-y					:= socfpga.o
 obj-$(CONFIG_SMP)	+= headsmp.o platsmp.o
 obj-$(CONFIG_SOCFPGA_SUSPEND)	+= pm.o self-refresh.o
 obj-$(CONFIG_FPGADMA)	+= fpga-dma.o
-obj-$(CONFIG_EDAC_ALTERA_OCRAM_ECC) += ocram.o

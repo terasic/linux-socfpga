@@ -28,7 +28,6 @@
 #include <asm/cacheflush.h>
 
 #include "core.h"
-#include "ocram.h"
 
 void __iomem *sys_manager_base_addr;
 void __iomem *rst_manager_base_addr;
@@ -173,7 +172,6 @@ static void __init socfpga_cyclone5_init(void)
 			     NULL, NULL);
 	enable_periphs();
 	socfpga_soc_device_init();
-	socfpga_init_ocram_ecc();
 }
 
 static const char *altera_dt_match[] = {
