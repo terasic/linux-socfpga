@@ -48,7 +48,6 @@ void socfpga_init_arria10_l2_ecc(void)
 
 	pr_alert("SOCFPGA: Success Initializing L2 cache ECC for Arria10");
 
-	of_node_put(np);
 	return;
 }
 
@@ -73,7 +72,6 @@ void socfpga_init_l2_ecc(void)
 	writel(0x01, mapped_l2_edac_addr);
 
 	pr_alert("SOCFPGA: Success Initializing L2 cache ECC");
-	of_node_put(np);
 
 	return;
 }
