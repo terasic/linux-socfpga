@@ -36,44 +36,20 @@ static irqreturn_t altr_ecc_mgr_handler(int irq, void *dev_id)
 	struct edac_device_ctl_info *dci = dev_id;
 	struct altr_ecc_mgr_dev *drvdata = dci->pvt_info;
 	const struct ecc_mgr_prv_data *priv = drvdata->data;
-	void __iomem *clear_addr = ecc_clear_addr(drvdata);
-	void __iomem *stat_addr = ecc_status_addr(drvdata);
-	bool handle_ce = false;
-	bool handle_ue = false;
 
 	if (irq == drvdata->sb_irq) {
-		if (priv->ce_status_mask) {
-			if (readl(stat_addr) & priv->ce_status_mask)
-				handle_ce = true;
-		} else {
-			/* Cyclone V implementation */
-			handle_ce = true;
-		}
-	}
-
-	if (irq == drvdata->db_irq) {
-		if (priv->ue_status_mask) {
-			if (readl(stat_addr) & priv->ue_status_mask)
-				handle_ue = true;
-		} else {
-			/* Cyclone V implementation */
-			handle_ue = true;
-		}
-	}
-
-	if (handle_ce) {
 		if (priv->ce_clear_mask)
-			writel(priv->ce_clear_mask, clear_addr);
+			writel(priv->ce_clear_mask, drvdata->base);
 		edac_device_handle_ce(dci, 0, 0, drvdata->edac_dev_name);
 	}
-
-	if (handle_ue) {
+	if (irq == drvdata->db_irq) {
 		if (priv->ue_clear_mask)
-			writel(priv->ue_clear_mask, clear_addr);
+			writel(priv->ue_clear_mask, drvdata->base);
 		edac_device_handle_ue(dci, 0, 0, drvdata->edac_dev_name);
+		panic("\nEDAC:ECC_MGR[Uncorrectable errors]\n");
 	}
 
-	return IRQ_RETVAL(handle_ce | handle_ue);
+	return IRQ_HANDLED;
 }
 
 #ifdef CONFIG_EDAC_DEBUG
@@ -86,8 +62,6 @@ ssize_t altr_ecc_mgr_trig(struct edac_device_ctl_info *edac_dci,
 	struct altr_ecc_mgr_dev *drvdata = edac_dci->pvt_info;
 	const struct ecc_mgr_prv_data *priv = drvdata->data;
 	void *generic_ptr = edac_dci->dev;
-	void __iomem *set_addr = ecc_set_addr(drvdata);
-	void __iomem *en_addr = ecc_enable_addr(drvdata);
 
 	if (!priv->init_mem)
 		return -ENOMEM;
@@ -117,8 +91,8 @@ ssize_t altr_ecc_mgr_trig(struct edac_device_ctl_info *edac_dci,
 			result = -1;
 		rmb();
 		/* Toggle Error bit (it is latched), leave ECC enabled */
-		writel(error_mask, set_addr);
-		writel(priv->ecc_enable_mask, en_addr);
+		writel(error_mask, drvdata->base);
+		writel(priv->ecc_enable_mask, drvdata->base);
 		ptemp[i] = i;
 	}
 	wmb();
@@ -160,7 +134,6 @@ static void altr_set_sysfs_attr(struct edac_device_ctl_info *edac_dci,
 static const struct of_device_id altr_ecc_mgr_of_match[] = {
 #ifdef CONFIG_EDAC_ALTERA_L2_ECC
 	{ .compatible = "altr,l2-edac", .data = (void *)&l2ecc_data },
-	{ .compatible = "altr,a10-l2-edac", .data = (void *)&a10_l2ecc_data },
 #endif
 #ifdef CONFIG_EDAC_ALTERA_OCRAM_ECC
 	{ .compatible = "altr,ocram-edac", .data = (void *)&ocramecc_data },
@@ -195,7 +168,6 @@ static int altr_ecc_mgr_probe(struct platform_device *pdev)
 
 	drvdata = dci->pvt_info;
 	dci->dev = &pdev->dev;
-	dci->panic_on_ue = 1;
 	platform_set_drvdata(pdev, dci);
 	drvdata->edac_dev_name = ecc_name;
 
@@ -236,14 +208,14 @@ static int altr_ecc_mgr_probe(struct platform_device *pdev)
 	drvdata->sb_irq = platform_get_irq(pdev, 0);
 	res = devm_request_irq(&pdev->dev, drvdata->sb_irq,
 			       altr_ecc_mgr_handler,
-			       IRQF_SHARED, dev_name(&pdev->dev), dci);
+			       0, dev_name(&pdev->dev), dci);
 	if (res < 0)
 		goto err;
 
 	drvdata->db_irq = platform_get_irq(pdev, 1);
 	res = devm_request_irq(&pdev->dev, drvdata->db_irq,
 			       altr_ecc_mgr_handler,
-			       IRQF_SHARED, dev_name(&pdev->dev), dci);
+			       0, dev_name(&pdev->dev), dci);
 	if (res < 0)
 		goto err;
 
