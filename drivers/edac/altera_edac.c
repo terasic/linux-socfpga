@@ -881,7 +881,7 @@ static void *ocram_alloc_mem(size_t size, void **other)
 	if (!np)
 		return NULL;
 
-	gp = of_gen_pool_get(np, "iram", 0);
+	gp = of_get_named_gen_pool(np, "iram", 0);
 	of_node_put(np);
 	if (!gp)
 		return NULL;
