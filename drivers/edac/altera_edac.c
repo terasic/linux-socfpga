@@ -698,21 +698,31 @@ static const struct file_operations altr_edac_device_inject_fops = {
 	.llseek = generic_file_llseek,
 };
 
+struct dentry * get_edac_debugfs(void);
 static void altr_create_edacdev_dbgfs(struct edac_device_ctl_info *edac_dci,
 				      const struct edac_device_prv_data *priv)
 {
 	struct altr_edac_device_dev *drvdata = edac_dci->pvt_info;
+	struct dentry *edac_debugfs = get_edac_debugfs();
 
 	if (!IS_ENABLED(CONFIG_EDAC_DEBUG))
 		return;
 
-	drvdata->debugfs_dir = edac_debugfs_create_dir(drvdata->edac_dev_name);
+	if (!edac_debugfs) {
+		edac_debugfs = debugfs_create_dir("edac", NULL);
+		if (IS_ERR(edac_debugfs)) {
+			edac_debugfs = NULL;
+			return;
+		}
+	}
+
+	drvdata->debugfs_dir = debugfs_create_dir(drvdata->edac_dev_name,
+						  edac_debugfs);
 	if (!drvdata->debugfs_dir)
 		return;
 
-	if (!edac_debugfs_create_file(priv->dbgfs_name, S_IWUSR,
-				      drvdata->debugfs_dir, edac_dci,
-				      &altr_edac_device_inject_fops))
+	if (!debugfs_create_file(priv->dbgfs_name, S_IWUSR, drvdata->debugfs_dir,
+				 edac_dci, priv->inject_fops))
 		debugfs_remove_recursive(drvdata->debugfs_dir);
 }
 
