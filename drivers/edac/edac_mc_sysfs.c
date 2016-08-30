@@ -919,6 +919,11 @@ void edac_debugfs_exit(void)
 	debugfs_remove(edac_debugfs);
 }
 
+struct dentry * get_edac_debugfs(void)
+{
+	return edac_debugfs;
+}
+
 static int edac_create_debug_nodes(struct mem_ctl_info *mci)
 {
 	struct dentry *d, *parent;
