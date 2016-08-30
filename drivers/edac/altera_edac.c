@@ -1106,12 +1106,11 @@ static ssize_t altr_edac_a10_device_trig(struct file *file,
 	return count;
 }
 
-static void altr_edac_a10_irq_handler(struct irq_desc *desc)
+static void altr_edac_a10_irq_handler(unsigned irq, struct irq_desc *desc)
 {
 	int dberr, bit, sm_offset, irq_status;
 	struct altr_arria10_edac *edac = irq_desc_get_handler_data(desc);
 	struct irq_chip *chip = irq_desc_get_chip(desc);
-	int irq = irq_desc_get_irq(desc);
 
 	dberr = (irq == edac->db_irq) ? 1 : 0;
 	sm_offset = dberr ? A10_SYSMGR_ECC_INTSTAT_DERR_OFST :
@@ -1322,18 +1321,17 @@ static int altr_edac_a10_probe(struct platform_device *pdev)
 		return edac->sb_irq;
 	}
 
-	irq_set_chained_handler_and_data(edac->sb_irq,
-					 altr_edac_a10_irq_handler,
-					 edac);
+	irq_set_chained_handler(edac->sb_irq, altr_edac_a10_irq_handler);
+	irq_set_handler_data(edac->sb_irq, edac);
 
 	edac->db_irq = platform_get_irq(pdev, 1);
 	if (edac->db_irq < 0) {
 		dev_err(&pdev->dev, "No DBERR IRQ resource\n");
 		return edac->db_irq;
 	}
-	irq_set_chained_handler_and_data(edac->db_irq,
-					 altr_edac_a10_irq_handler,
-					 edac);
+
+	irq_set_chained_handler(edac->db_irq, altr_edac_a10_irq_handler);
+	irq_set_handler_data(edac->db_irq, edac);
 
 	for_each_child_of_node(pdev->dev.of_node, child) {
 		if (!of_device_is_available(child))
