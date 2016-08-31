@@ -58,3 +58,13 @@
 		};
 	};
 };
+
+&eccmgr {
+	qspi-ecc@ff8c8400 {
+		compatible = "altr,socfpga-qspi-ecc";
+		reg = <0xff8c8400 0x400>;
+		altr,ecc-parent = <&qspi>;
+		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>,
+			     <46 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};
