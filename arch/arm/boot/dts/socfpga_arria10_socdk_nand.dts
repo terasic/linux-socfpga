@@ -42,3 +42,29 @@
 		};
 	};
 };
+
+&eccmgr {
+	nand-buf-ecc@ff8c2000 {
+		compatible = "altr,socfpga-nand-ecc";
+		reg = <0xff8c2000 0x400>;
+		altr,ecc-parent = <&nand>;
+		interrupts = <11 IRQ_TYPE_LEVEL_HIGH>,
+			     <43 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	nand-rd-ecc@ff8c2400 {
+		compatible = "altr,socfpga-nand-ecc";
+		reg = <0xff8c2400 0x400>;
+		altr,ecc-parent = <&nand>;
+		interrupts = <13 IRQ_TYPE_LEVEL_HIGH>,
+			     <45 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	nand-wr-ecc@ff8c2800 {
+		compatible = "altr,socfpga-nand-ecc";
+		reg = <0xff8c2800 0x400>;
+		altr,ecc-parent = <&nand>;
+		interrupts = <12 IRQ_TYPE_LEVEL_HIGH>,
+			     <44 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};
