@@ -101,6 +101,9 @@ int tse_pcs_init(void __iomem *base, struct tse_pcs *pcs)
 {
 	int ret = 0;
 
+	if (!base || !pcs)
+		return -EINVAL;
+
 	writew(TSE_PCS_USE_SGMII_ENA, base + TSE_PCS_IF_MODE_REG);
 
 	writew(TSE_PCS_SGMII_LINK_TIMER_0, base + TSE_PCS_LINK_TIMER_0_REG);
