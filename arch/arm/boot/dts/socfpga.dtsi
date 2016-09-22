@@ -524,7 +524,6 @@
 			compatible = "altr,socfpga-lwhps2fpga-bridge";
 			reg = <0xff400000 0x100000>;
 			resets = <&rst LWHPS2FPGA_RESET>;
-			reset-names = "lwhps2fpga";
 			clocks = <&l4_main_clk>;
 		};
 
@@ -532,7 +531,6 @@
 			compatible = "altr,socfpga-hps2fpga-bridge";
 			reg = <0xff500000 0x10000>;
 			resets = <&rst HPS2FPGA_RESET>;
-			reset-names = "hps2fpga";
 			clocks = <&l4_main_clk>;
 		};
 
@@ -540,7 +538,6 @@
 			compatible = "altr,socfpga-fpga2hps-bridge";
 			reg = <0xff600000 0x100000>;
 			resets = <&rst FPGA2HPS_RESET>;
-			reset-names = "fpga2hps";
 			clocks = <&l4_main_clk>;
 		};
 
