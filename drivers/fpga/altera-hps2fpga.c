@@ -141,7 +141,7 @@ static int alt_fpga_bridge_probe(struct platform_device *pdev)
 	of_id = of_match_device(altera_fpga_of_match, dev);
 	priv = (struct altera_hps2fpga_data *)of_id->data;
 
-	priv->bridge_reset = devm_reset_control_get(dev, priv->name);
+	priv->bridge_reset = of_reset_control_get_by_index(dev->of_node, 0);
 	if (IS_ERR(priv->bridge_reset)) {
 		dev_err(dev, "Could not get %s reset control\n", priv->name);
 		return PTR_ERR(priv->bridge_reset);
