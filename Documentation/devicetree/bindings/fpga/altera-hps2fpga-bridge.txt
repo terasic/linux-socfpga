@@ -6,12 +6,7 @@ Required properties:
 		  "altr,socfpga-lwhps2fpga-bridge",
 		  "altr,socfpga-hps2fpga-bridge", or
 		  "altr,socfpga-fpga2hps-bridge"
-- reset-names	: Should contain one of:
-		  "lwhps2fpga",
-		  "hps2fpga", or
-		  "fpga2hps"
-- resets	: Phandle and reset specifier for the reset listed in
-		  reset-names
+- resets	: Phandle and reset specifier for this bridge's reset
 - clocks	: Clocks used by this module.
 
 Optional properties:
@@ -24,7 +19,6 @@ Example:
 		compatible = "altr,socfpga-lwhps2fpga-bridge";
 		reg = <0xff400000 0x100000>;
 		resets = <&rst LWHPS2FPGA_RESET>;
-		reset-names = "lwhps2fpga";
 		clocks = <&l4_main_clk>;
 		bridge-enable = <0>;
 	};
@@ -33,7 +27,6 @@ Example:
 		compatible = "altr,socfpga-hps2fpga-bridge";
 		reg = <0xff500000 0x10000>;
 		resets = <&rst HPS2FPGA_RESET>;
-		reset-names = "hps2fpga";
 		clocks = <&l4_main_clk>;
 		bridge-enable = <1>;
 	};
@@ -42,6 +35,5 @@ Example:
 		compatible = "altr,socfpga-fpga2hps-bridge";
 		reg = <0xff600000 0x100000>;
 		resets = <&rst FPGA2HPS_RESET>;
-		reset-names = "fpga2hps";
 		clocks = <&l4_main_clk>;
 	};
