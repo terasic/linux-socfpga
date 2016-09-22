@@ -532,7 +532,6 @@ static int socfpga_a10_fpga_probe(struct platform_device *pdev)
 	ret = clk_prepare_enable(priv->clk);
 	if (ret) {
 		dev_err(dev, "could not enable clock\n");
-		clk_put(priv->clk);
 		return -EBUSY;
 	}
 
@@ -547,7 +546,6 @@ static int socfpga_a10_fpga_remove(struct platform_device *pdev)
 
 	fpga_mgr_unregister(&pdev->dev);
 	clk_disable_unprepare(priv->clk);
-	clk_put(priv->clk);
 
 	return 0;
 }
