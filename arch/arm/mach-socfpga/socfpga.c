@@ -203,7 +203,10 @@ static const char *altera_a10_dt_match[] = {
 };
 
 DT_MACHINE_START(SOCFPGA_A10, "Altera SOCFPGA Arria10")
-	.l2c_aux_val	= L2C_AUX_CTRL_SHARED_OVERRIDE,
+	.l2c_aux_val	= L2C_AUX_CTRL_EVTMON_ENABLE |
+			L2C_AUX_CTRL_SHARED_OVERRIDE |
+			L310_AUX_CTRL_INSTR_PREFETCH |
+			L310_AUX_CTRL_DATA_PREFETCH,
 	.l2c_aux_mask	= ~0,
 	.init_irq	= socfpga_init_irq,
 	.restart	= socfpga_arria10_restart,
