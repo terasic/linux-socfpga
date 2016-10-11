@@ -124,37 +124,6 @@
 	status = "okay";
 };
 
-&spi1 {
-	status = "okay";
-
-	a10_sysctl: a10_sysctl@0 {
-		compatible = "altr,a10sycon";
-		reg = <0>;
-		interrupt-parent = <&gpio1>;
-		/* low-level active IRQ at GPIO1_5 */
-		interrupts = <5 0x8>;
-		interrupt-controller;
-		#interrupt-cells = <2>;
-		spi-max-frequency = <1000000>;
-
-		gpio4: gpio-controller {
-			compatible = "altr,a10sycon-gpio";
-			gpio-controller;
-			#gpio-cells = <2>;
-			ngpios = <16>;
-		};
-
-		hwmon: a10hwmon {
-			compatible = "altr,a10sycon-hwmon";
-		};
-
-		a10rst: a10rst {
-			compatible = "altr,a10sycon-reset";
-			#reset-cells = <1>;
-		};
-	};
-};
-
 &watchdog1 {
 	status = "okay";
 };
