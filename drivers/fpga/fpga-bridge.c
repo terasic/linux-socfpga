@@ -88,8 +88,6 @@ struct fpga_bridge *of_fpga_bridge_get(struct device_node *np,
 	struct fpga_bridge *bridge;
 	int ret = -ENODEV;
 
-	of_node_get(np);
-
 	dev = class_find_device(fpga_bridge_class, NULL, np,
 				fpga_bridge_of_node_match);
 	if (!dev)
@@ -117,7 +115,6 @@ err_ll_mod:
 	mutex_unlock(&bridge->mutex);
 err_dev:
 	put_device(dev);
-	of_node_put(np);
 	return ERR_PTR(ret);
 }
 EXPORT_SYMBOL_GPL(of_fpga_bridge_get);
