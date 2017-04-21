@@ -92,14 +92,6 @@
 			};
 		};
 
-		base_fpga_region: base-fpga-region {
-			compatible = "fpga-region";
-			fpga-mgr = <&fpga_mgr>;
-
-			#address-cells = <0x1>;
-			#size-cells = <0x1>;
-		};
-
 		can0: can@ffc00000 {
 			compatible = "bosch,d_can";
 			reg = <0xffc00000 0x1000>;
@@ -554,7 +546,16 @@
 			       0xffb90000 0x20>;
 			interrupts = <0 175 4>;
 		};
-
+		base_fpga_region:base-fpga-region{
+			compatible = "fpga-region";
+			fpga-mgr=<&fpga_mgr>;
+			fpga-bridges=<&fpga_bridge0>,<&fpga_bridge1>,
+				     <&fpga_bridge2>,<&fpga_bridge3>;
+			#address-cells=<0x02>;
+			#size-cells=<0x01>;
+			ranges=<0x00000000 0x00000000 0xc0000000 0x20000000>,
+			       <0x00000001 0x00000000 0xff200000 0x00200000>,
+		};
 		gmac0: ethernet@ff700000 {
 			compatible = "altr,socfpga-stmmac", "snps,dwmac-3.70a", "snps,dwmac";
 			altr,sysmgr-syscon = <&sysmgr 0x60 0>;
