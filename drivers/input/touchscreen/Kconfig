@@ -140,6 +140,17 @@ config TOUCHSCREEN_BU21013
 	  To compile this driver as a module, choose M here: the
 	  module will be called bu21013_ts.
 
+config  TOUCHSCREEN_FT5406
+	tristate "Terasic ft_5406 driver"
+	help
+	  Say Y here if you have a terasic mtl2/mtlc2 touchscreen connected to
+	  your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ft_5406.
+
 config TOUCHSCREEN_CHIPONE_ICN8318
 	tristate "chipone icn8318 touchscreen controller"
 	depends on GPIOLIB || COMPILE_TEST
