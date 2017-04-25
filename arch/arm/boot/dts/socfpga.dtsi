@@ -554,7 +554,7 @@
 			#address-cells=<0x02>;
 			#size-cells=<0x01>;
 			ranges=<0x00000000 0x00000000 0xc0000000 0x20000000>,
-			       <0x00000001 0x00000000 0xff200000 0x00200000>,
+			       <0x00000001 0x00000000 0xff200000 0x00200000>;
 		};
 		gmac0: ethernet@ff700000 {
 			compatible = "altr,socfpga-stmmac", "snps,dwmac-3.70a", "snps,dwmac";
