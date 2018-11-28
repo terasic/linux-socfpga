@@ -854,5 +854,24 @@
 			clocks = <&l4_sys_free_clk>;
 			status = "disabled";
 		};
+
+		lwh2f_bridge: bridge@ff20000 {
+			compatible = "simple-bus";
+			reg = <0xff200000 0x200000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			status="okay";
+			ranges = <0x00000140 0xff200140 0x00000040>;
+
+			hps_vip: vip@0x140 {
+				compatible = "altr,vip-frame-buffer-2.0";
+				reg = <0x00000140 0x00000040>;
+				altr,max-width = <1920>;
+				altr,max-height = <1080>;
+				altr,bits-per-symbol = <8>;
+				altr,mem-port-width = <128>;
+				status="disabled";
+			};
+		};
 	};
 };

@@ -38,3 +38,6 @@
 	};
 };
 
+&hps_vip{
+	status="okay";
+};
