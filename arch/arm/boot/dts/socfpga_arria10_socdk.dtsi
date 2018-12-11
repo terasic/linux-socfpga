@@ -161,7 +161,7 @@
 	status = "okay";
 };
 
-&i2c1 {
+&i2c0 {
 	speed-mode = <0>;
 	status = "okay";
 
