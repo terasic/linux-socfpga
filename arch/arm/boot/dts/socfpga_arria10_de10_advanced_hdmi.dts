@@ -41,3 +41,7 @@
 &hps_vip{
 	status="okay";
 };
+
+&gpio2{
+	status="okay";
+};
