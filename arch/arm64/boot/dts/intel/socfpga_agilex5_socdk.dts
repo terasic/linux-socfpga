@@ -26,18 +26,9 @@
 		compatible = "gpio-leds";
 		hps0 {
 			label = "hps_led0";
-			gpios = <&portb 20 GPIO_ACTIVE_HIGH>;
+			gpios = <&portb 17 GPIO_ACTIVE_LOW>;
 		};
 
-		hps1 {
-			label = "hps_led1";
-			gpios = <&portb 19 GPIO_ACTIVE_HIGH>;
-		};
-
-		hps2 {
-			label = "hps_led2";
-			gpios = <&portb 21 GPIO_ACTIVE_HIGH>;
-		};
 	};
 
 	memory {
@@ -47,12 +38,22 @@
 	};
 };
 
+&spi0 {
+    status = "okay";
+
+    spidev@0 {
+        compatible = "rohm,dh2228fv";
+        reg = <0>;
+        spi-max-frequency = <1000000>;
+    };
+};
+
 &gpio1 {
 	status = "okay";
 };
 
 &gmac0 {
-	status = "disabled";
+	status = "okay";
 	phy-mode = "rgmii-id";
 	phy-handle = <&emac0_phy0>;
 
@@ -63,13 +64,13 @@
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
 		emac0_phy0: ethernet-phy@0 {
-			reg = <0>;
+			reg = <1>;
 		};
 	};
 };
 
 &gmac2 {
-	status = "okay";
+	status = "disabled";
 	phy-mode = "rgmii-id";
 	phy-handle = <&emac2_phy0>;
 
@@ -91,6 +92,7 @@
 	no-1-8-v;
 	cap-sd-highspeed;
 	cap-mmc-highspeed;
+	disable-wp;
 	sd-uhs-sdr50;
 	sdhci-caps = <0x00000000 0x0000c800>;
 	sdhci-caps-mask = <0x00002000 0x0000ff00>;
@@ -147,7 +149,11 @@
 };
 
 &usb31 {
-	status = "okay";
+	status = "disabled";
+};
+
+&i2c1 {
+    status = "okay";
 };
 
 &dwc3_0 {
@@ -192,21 +198,6 @@
 		cdns,tchsh-ns = <4>;
 		cdns,tslch-ns = <4>;
 
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-			rsu-handle = <&qspi_boot>;
 
-			qspi_boot: partition@0 {
-				label = "u-boot";
-				reg = <0x0 0x04200000>;
-			};
-
-			root: partition@4200000 {
-				label = "root";
-				reg = <0x04200000 0x0BE00000>;
-			};
-		};
 	};
 };
