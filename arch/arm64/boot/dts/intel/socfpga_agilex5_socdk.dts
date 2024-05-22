@@ -10,12 +10,13 @@
 
 	aliases {
 		serial0 = &uart0;
+		serial1 = &uart1;
 		ethernet0 = &gmac0;
 		ethernet2 = &gmac2;
 	};
 
 	chosen {
-		stdout-path = "serial0:115200n8";
+		stdout-path = "serial1:115200n8";
 		bootargs = "console=uart8250,mmio32,0x10c02000,115200n8 \
 			root=/dev/ram0 rw initrd=0x10000000 init=/sbin/init \
 			ramdisk_size=10000000 earlycon=uart8250,mmio32,0x10c02000,115200n8 \
@@ -140,6 +141,10 @@
 };
 
 &uart0 {
+	status = "disabled";
+};
+
+&uart1 {
 	status = "okay";
 };
 
