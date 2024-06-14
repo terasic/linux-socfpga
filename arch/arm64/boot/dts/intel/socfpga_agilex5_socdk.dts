@@ -24,20 +24,12 @@
 
 	leds {
 		compatible = "gpio-leds";
-		hps0 {
-			label = "hps_led0";
-			gpios = <&portb 20 GPIO_ACTIVE_HIGH>;
-		};
 
 		hps1 {
 			label = "hps_led1";
-			gpios = <&portb 19 GPIO_ACTIVE_HIGH>;
+			gpios = <&porta 11 GPIO_ACTIVE_HIGH>;
 		};
 
-		hps2 {
-			label = "hps_led2";
-			gpios = <&portb 21 GPIO_ACTIVE_HIGH>;
-		};
 	};
 
 	memory {
@@ -47,7 +39,7 @@
 	};
 };
 
-&gpio1 {
+&gpio0 {
 	status = "okay";
 };
 
@@ -85,12 +77,21 @@
 	};
 };
 
+&i3c0 {
+	status = "okay";
+};
+
+&i3c1 {
+	status = "okay";
+};
+
 &mmc {
 	status = "okay";
 	bus-width = <4>;
 	no-1-8-v;
 	cap-sd-highspeed;
 	cap-mmc-highspeed;
+	disable-wp;
 	sd-uhs-sdr50;
 	sdhci-caps = <0x00000000 0x0000c800>;
 	sdhci-caps-mask = <0x00002000 0x0000ff00>;
@@ -207,6 +208,67 @@
 				label = "root";
 				reg = <0x04200000 0x0BE00000>;
 			};
+		};
+	};
+};
+
+&temp_volt {
+	voltage {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		input@2 {
+			label = "0.8V VCC";
+			reg = <2>;
+		};
+
+		input@3 {
+			label = "1.8V VCCIO_SDM";
+			reg = <3>;
+		};
+
+		input@4 {
+			label = "1.8V VCCPT";
+			reg = <4>;
+		};
+
+		input@5 {
+			label = "1.2V VCCCRCORE";
+			reg = <5>;
+		};
+
+		input@6 {
+			label = "0.9V VCCH";
+			reg = <6>;
+		};
+
+		input@7 {
+			label = "0.8V VCCL";
+			reg = <7>;
+		};
+	};
+
+	temperature {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		input@0 {
+			label = "Main Die SDM";
+			reg = <0x0>;
+		};
+
+		input@10001 {
+			label = "Main Die corner bottom left max";
+			reg = <0x10001>;
+		};
+
+		input@30001 {
+			label = "Main Die corner bottom right max";
+			reg = <0x30001>;
+		};
+
+		input@40001 {
+			label = "Main Die corner top right max";
+			reg = <0x40001>;
 		};
 	};
 };
