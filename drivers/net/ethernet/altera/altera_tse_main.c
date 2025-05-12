@@ -1471,6 +1471,7 @@ static int altera_tse_probe(struct platform_device *pdev)
 			 priv->tx_irq);
 
 	priv->pcs = alt_tse_pcs_create(ndev, priv->pcs_base, pcs_reg_width);
+
 	if (IS_ERR(priv->pcs)) {
 		ret = PTR_ERR(priv->pcs);
 		goto err_init_phy;
@@ -1521,6 +1522,7 @@ static int altera_tse_probe(struct platform_device *pdev)
 	}
 
 	return 0;
+
 err_init_phy:
 	unregister_netdev(ndev);
 err_register_netdev:
@@ -1544,7 +1546,6 @@ static int altera_tse_remove(struct platform_device *pdev)
 	altera_tse_mdio_destroy(ndev);
 	unregister_netdev(ndev);
 	phylink_destroy(priv->phylink);
-
 	free_netdev(ndev);
 
 	return 0;
