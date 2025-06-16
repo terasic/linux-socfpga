@@ -20,6 +20,7 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/of_dma.h>
+#include <linux/math64.h>
 
 #include "dmaengine.h"
 
@@ -395,15 +396,18 @@ msgdma_prep_slave_sg(struct dma_chan *dchan, struct scatterlist *sgl,
 	struct msgdma_sw_desc *new, *first = NULL;
 	void *desc = NULL;
 	size_t len, avail;
+	dma_addr_t fpga_addr;
 	dma_addr_t dma_dst, dma_src;
 	u32 desc_cnt = 0, i;
 	struct scatterlist *sg;
 	u32 stride;
 	unsigned long irqflags;
 
-	for_each_sg(sgl, sg, sg_len, i)
-		desc_cnt += DIV_ROUND_UP(sg_dma_len(sg), MSGDMA_MAX_TRANS_LEN);
-
+	for_each_sg(sgl, sg, sg_len, i) {
+		u64 len = sg_dma_len(sg);
+		desc_cnt += DIV64_U64_ROUND_UP(len, MSGDMA_MAX_TRANS_LEN);
+	}
+	
 	spin_lock_irqsave(&mdev->lock, irqflags);
 	if (desc_cnt > mdev->desc_free_cnt) {
 		spin_unlock_irqrestore(&mdev->lock, irqflags);
@@ -414,6 +418,12 @@ msgdma_prep_slave_sg(struct dma_chan *dchan, struct scatterlist *sgl,
 	spin_unlock_irqrestore(&mdev->lock, irqflags);
 
 	avail = sg_dma_len(sgl);
+	
+	if (dir == DMA_MEM_TO_DEV) {
+		fpga_addr = cfg->dst_addr;
+	} else {
+		fpga_addr = cfg->src_addr;
+	}
 
 	/* Run until we are out of scatterlist entries */
 	while (true) {
@@ -425,15 +435,16 @@ msgdma_prep_slave_sg(struct dma_chan *dchan, struct scatterlist *sgl,
 
 		if (dir == DMA_MEM_TO_DEV) {
 			dma_src = sg_dma_address(sgl) + sg_dma_len(sgl) - avail;
-			dma_dst = cfg->dst_addr;
+			dma_dst = fpga_addr;
 			stride = MSGDMA_DESC_STRIDE_RD;
 		} else {
-			dma_src = cfg->src_addr;
+			dma_src = fpga_addr;
 			dma_dst = sg_dma_address(sgl) + sg_dma_len(sgl) - avail;
 			stride = MSGDMA_DESC_STRIDE_WR;
 		}
 		msgdma_desc_config(desc, dma_dst, dma_src, len, stride);
 		avail -= len;
+		fpga_addr += len;
 
 		if (!first)
 			first = new;
