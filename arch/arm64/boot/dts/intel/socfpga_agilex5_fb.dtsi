@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2025, Terasic
+ */
+
+/ {
+	soc {
+		framebuffer_reader@20020000{
+			compatible = "altr,vvp-frame-buffer-1.0";
+			reg = <0x20020000 0x200 0x20020200 0x10>;
+			altr,max-width = <1280>;
+			altr,max-height= <720>;
+			altr,bits-per-symbol = <8>;
+			altr,mem-port-width = <256>;
+			status = "okay";
+		};
+	};
+};
