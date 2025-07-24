@@ -123,8 +123,8 @@
 &i2c1 {
 	status = "okay";
 	
-	pcf85263: rtc@51 {
-		compatible = "nxp,pcf85263";
+	pcf85063: rtc@51 {
+		compatible = "nxp,pcf85063";
 		reg = <0x51>;
 	};  
 };
