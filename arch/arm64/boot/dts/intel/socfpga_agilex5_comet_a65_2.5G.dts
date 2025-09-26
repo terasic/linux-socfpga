@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2023, Intel Corporation
+ */
+#include "socfpga_agilex5_comet_a65.dts"
+
+/ {
+	gmii_to_sgmii_converter: phy@30020100 {
+		compatible = "altr,gmii-to-sgmii-2.0";
+		reg = <0x0 0x30020100 0x0 0x80>;
+		reg-names = "mrphy";
+	};
+};
+
+&gmac1 {
+	status = "okay";
+	phy-mode = "2500base-x";
+	mac-mode = "gmii";
+	phy-handle = <&emac1_phy0>;
+	max-speed = <2500>;
+	max-frame-size = <9000>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter>;
+
+	mdio0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dwmac-mdio";
+		emac1_phy0: ethernet-phy@0 {
+			reg = <0>;
+		};
+	};
+};
+
+&gmac0 {
+	status = "okay";
+};
