@@ -112,7 +112,7 @@
 			reg = <2>;
 			
 			txen-skew-ps = <0>; /* -420ps */
-			txc-skew-ps = <480>; /* 0ps */
+			txc-skew-ps = <1800>; /* 0ps */
 			rxdv-skew-ps = <420>; /* 0ps */
 			rxc-skew-ps = <1680>; /* 780ps */
 		};
