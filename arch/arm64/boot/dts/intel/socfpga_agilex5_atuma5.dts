@@ -4,6 +4,7 @@
  */
 #include "socfpga_agilex5.dtsi"
 #include "socfpga_agilex5_ai_suite.dtsi"
+#include "socfpga_agilex5_fb.dtsi"
 
 / {
 	model = "SoCFPGA Agilex5 Terasic Atum-A5";
