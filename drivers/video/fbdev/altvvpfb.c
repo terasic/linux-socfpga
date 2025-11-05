@@ -117,6 +117,14 @@ static void altvvpfb_start_hw(void __iomem *base, struct fb_info *info)
 	version = readl(base + VVP_VFR_VERSION);
 	printk("Version: %d\n",version);
 	
+	// reset ip
+	writel(1,base+0x200);
+	mdelay(3);
+	writel(0,base+0x200);
+	mdelay(3);
+	writel(1,base+0x200);
+	mdelay(3);
+	
 	// config vvp vfr
 	writel(1,base+VVP_VFR_CSR_NUM_BUFFER_SETS);
 	writel(1,base+VVP_VFR_BUFFER_0_NUM_BUFFERS);
