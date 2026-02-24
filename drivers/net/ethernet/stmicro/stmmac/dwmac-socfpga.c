@@ -23,6 +23,7 @@
 #include "stmmac_ptp.h"
 
 #include "altr_tse_pcs.h"
+#include "mrphy.h"
 
 #define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII 0x0
 #define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII 0x1
@@ -77,6 +78,7 @@ struct socfpga_dwmac {
 	const struct socfpga_dwmac_ops *ops;
 	struct mdio_device *pcs_mdiodev;
 	struct tse_pcs pcs;
+	struct mr_phy  mrphy;
 };
 
 static void socfpga_dwmac_fix_mac_speed(void *priv, unsigned int speed, unsigned int mode)
@@ -84,6 +86,7 @@ static void socfpga_dwmac_fix_mac_speed(void *priv, unsigned int speed, unsigned
 	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
 	void __iomem *splitter_base = dwmac->splitter_base;
 	void __iomem *sgmii_adapter_base = dwmac->pcs.sgmii_adapter_base;
+	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
 	struct device *dev = dwmac->dev;
 	struct net_device *ndev = dev_get_drvdata(dev);
 	struct phy_device *phy_dev = ndev->phydev;
@@ -118,7 +121,97 @@ static void socfpga_dwmac_fix_mac_speed(void *priv, unsigned int speed, unsigned
 		       sgmii_adapter_base + SGMII_ADAPTER_CTRL_REG);
 		tse_pcs_fix_mac_speed(&dwmac->pcs, phy_dev, speed);
 	}
+	if (mrphy_base)
+		mrphy_fix_mac_speed(&dwmac->mrphy, phy_dev, speed);
 }
+
+static int socfpga_mrphy_get_efifo_tx_latency(void *priv, u32 *efifo_tx_lat)
+{
+	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
+	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+
+	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
+				    & MRPHY_TX_DL_BLOCK_IN_RESET))
+	{
+		/* get the integer and fraction part in the Q13.8 fomrat */
+		/* 7:0 fraction part */
+		*efifo_tx_lat = readw(mrphy_base + MRPHY_EFIFO_TX_DELAY_REG) & 0xFF;
+		/* 12:0 -> 20:8 integer part */
+		*efifo_tx_lat |= ((readw(mrphy_base +
+				   MRPHY_EFIFO_TX_DELAY_REG +
+				   2) & 0x1FFF) << 8);
+		return 0;
+	}
+	else
+		return -1;
+}
+
+static int socfpga_mrphy_get_efifo_rx_latency(void *priv, u32 *efifo_rx_lat)
+{
+	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
+	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+
+	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
+				    & MRPHY_RX_DL_BLOCK_IN_RESET))
+	{
+		/* get the integer and fraction part in the Q13.8 fomrat */
+		/* 7:0 fraction part */
+		*efifo_rx_lat = readw(mrphy_base + MRPHY_EFIFO_RX_DELAY_REG)
+				      & 0xFF;
+		/* 12:0 -> 20:8 integer part */
+		*efifo_rx_lat |= ((readw(mrphy_base +
+				   MRPHY_EFIFO_RX_DELAY_REG +
+				   2) & 0x1FFF) << 8);
+		return 0;
+	}
+	else
+		return -1;
+}
+
+static int socfpga_mrphy_get_pcs_soft_tx_latency(void *priv, u32 *pcs_tx_lat)
+{
+	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
+	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+
+	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
+				    & MRPHY_TX_DL_BLOCK_IN_RESET))
+	{
+		/* get the integer and fraction part in the Q12.10 fomrat */
+		/* 9:0 fraction part */
+		*pcs_tx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_TX_DELAY_REG)
+			      & 0x3FF;
+		/* 11:0 -> 21:10 integer part */
+		*pcs_tx_lat |= ((readw(mrphy_base +
+				       MRPHY_PCS_SOFT_TX_DELAY_REG +
+				       2) & 0xFFF) << 10);
+		return 0;
+	}
+	else
+		return -1;
+}
+
+static int socfpga_mrphy_get_pcs_soft_rx_latency(void *priv, u32 *pcs_rx_lat)
+{
+	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
+	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+
+	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
+			      & MRPHY_RX_DL_BLOCK_IN_RESET))
+	{
+		/* get the integer and fraction part in the Q12.10 fomrat */
+		/* 9:0 fraction part */
+		*pcs_rx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_RX_DELAY_REG)
+				    & 0x3FF;
+		/* 11:0 -> 21:10 integer part */
+		*pcs_rx_lat |= ((readw(mrphy_base +
+				       MRPHY_PCS_SOFT_RX_DELAY_REG +
+				       2) & 0xFFF) << 10);
+		return 0;
+	}
+	else
+		return -1;
+}
+
 
 static void get_smtgtime(struct mii_bus *mii, int smtg_addr,
 			  u64 *smtg_time_ctr0, u64 *smtg_time_ctr1)
@@ -252,6 +345,7 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
 	struct resource res_splitter;
 	struct resource res_tse_pcs;
 	struct resource res_sgmii_adapter;
+	struct resource res_mrphy;
 
 	sys_mgr_base_addr =
 		altr_sysmgr_regmap_lookup_by_phandle(np, "altr,sysmgr-syscon");
@@ -365,6 +459,28 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
 				ret = PTR_ERR(dwmac->pcs.tse_pcs_base);
 				goto err_node_put;
 
+			}
+		}
+
+		index = of_property_match_string(np_sgmii_adapter, "reg-names",
+						 "mrphy");
+
+		if (index >= 0) {
+			if (of_address_to_resource(np_sgmii_adapter, index,
+						   &res_mrphy)) {
+				dev_err(dev,
+					"%s: ERROR: failed mapping mrphy control port\n",
+					__func__);
+				ret = -EINVAL;
+				goto err_node_put;
+			}
+
+			dwmac->mrphy.mrphy_base =
+				devm_ioremap_resource(dev, &res_mrphy);
+
+			if (IS_ERR(dwmac->mrphy.mrphy_base)) {
+				ret = PTR_ERR(dwmac->mrphy.mrphy_base);
+				goto err_node_put;
 			}
 		}
 	}
@@ -481,9 +597,15 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwmac *dwmac)
 	u32 reg_offset = dwmac->reg_offset;
 	u32 reg_shift = dwmac->reg_shift;
 	u32 ctrl, val, module;
+	int ret;
+	
+	dev_info(dwmac->dev, "set_phy_mode START: mode=%d\n", phymode);
+	
 
 	if (socfpga_set_phy_mode_common(phymode, &val))
 		return -EINVAL;
+		
+	 dev_info(dwmac->dev, "PHY mode val=0x%x\n", val);
 
 	/* Overwrite val to GMII if splitter core is enabled. The phymode here
 	 * is the actual phy mode on phy hardware, but phy interface from
@@ -493,10 +615,16 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwmac *dwmac)
 		val = SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII;
 
 	/* Assert reset to the enet controller before changing the phy mode */
-	reset_control_assert(dwmac->stmmac_ocp_rst);
-	reset_control_assert(dwmac->stmmac_rst);
+	dev_info(dwmac->dev, "Asserting resets...\n");
+	ret = reset_control_assert(dwmac->stmmac_ocp_rst);
+	dev_info(dwmac->dev, "stmmac_ocp_rst assert ret=%d\n", ret);
+	ret = reset_control_assert(dwmac->stmmac_rst);
+	dev_info(dwmac->dev, "stmmac_rst assert ret=%d\n", ret);
 
-	regmap_read(sys_mgr_base_addr, reg_offset, &ctrl);
+ 	dev_info(dwmac->dev, "Reading SYSMGR reg 0x%x...\n", reg_offset);
+	ret = regmap_read(sys_mgr_base_addr, reg_offset, &ctrl);
+	dev_info(dwmac->dev, "regmap_read ret=%d, ctrl=0x%08x\n", ret, ctrl);
+	
 	ctrl &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK);
 	ctrl |= val;
 
@@ -514,19 +642,28 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwmac *dwmac)
 		ctrl &= ~SYSMGR_GEN10_EMACGRP_CTRL_PTP_REF_CLK_MASK;
 	}
 
-	regmap_write(sys_mgr_base_addr, reg_offset, ctrl);
+	ret = regmap_write(sys_mgr_base_addr, reg_offset, ctrl);
+	dev_info(dwmac->dev, "regmap_write ret=%d, ctrl=0x%08x\n", ret, ctrl);
 
 	/* Deassert reset for the phy configuration to be sampled by
 	 * the enet controller, and operation to start in requested mode
 	 */
 	reset_control_deassert(dwmac->stmmac_ocp_rst);
 	reset_control_deassert(dwmac->stmmac_rst);
-	if (phymode == PHY_INTERFACE_MODE_SGMII) {
+	if (phymode == PHY_INTERFACE_MODE_SGMII && dwmac->pcs.tse_pcs_base) {
 		if (tse_pcs_init(dwmac->pcs.tse_pcs_base, &dwmac->pcs) != 0) {
 			dev_err(dwmac->dev, "Unable to initialize TSE PCS");
 			return -EINVAL;
 		}
 	}
+
+	if (dwmac->mrphy.mrphy_base) {
+		if (mrphy_init(dwmac->mrphy.mrphy_base, &dwmac->mrphy) != 0) {
+			dev_err(dwmac->dev, "Unable to initialize MRPHY");
+			return -EINVAL;
+		}
+	}
+
 	return 0;
 }
 
@@ -639,6 +776,14 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
 
 	plat_dat->riwt_off = 1;
 
+	if(dwmac->mrphy.mrphy_base)
+	{
+		plat_dat->mrphy_get_efifo_rx_latency = socfpga_mrphy_get_efifo_rx_latency;
+		plat_dat->mrphy_get_efifo_tx_latency = socfpga_mrphy_get_efifo_tx_latency;
+		plat_dat->mrphy_get_pcs_rx_latency = socfpga_mrphy_get_pcs_soft_rx_latency;
+		plat_dat->mrphy_get_pcs_tx_latency = socfpga_mrphy_get_pcs_soft_tx_latency;
+	}
+
 	/* Cross Timestamp support for SMTG Hub */
 	if (of_property_read_bool(pdev->dev.of_node, "altr,smtg-hub")) {
 		dev_info(dev, "SMTG Hub Cross Timestamp supported\n");
@@ -668,6 +813,7 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
 	dwmac->stmmac_rst = stpriv->plat->stmmac_rst;
 
 	ret = ops->set_phy_mode(dwmac);
+	dev_info(dev, "set_phy_mode returned %d\n", ret);
 	if (ret)
 		goto err_dvr_remove;
 
