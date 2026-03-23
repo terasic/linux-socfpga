@@ -28,6 +28,7 @@
 
 #include "dev.h"
 #include "net-sysfs.h"
+#include "../../drivers/net/ethernet/stmicro/stmmac/stmmac.h"
 
 #ifdef CONFIG_SYSFS
 static const char fmt_hex[] = "%#x\n";
@@ -634,6 +635,134 @@ static int modify_napi_threaded(struct net_device *dev, unsigned long val)
 	return ret;
 }
 
+static ssize_t eth_tx_latency_store(struct device *dev, struct device_attribute *attr,
+				    const char *buf, size_t len)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u64 val = 0;
+
+	if (netif_running(netdev)) {
+		if(!(kstrtoull(buf, 0, &val))) {
+			writeq(val, priv->ioaddr + 0xd60);
+			return (ssize_t)len;
+		}
+	}
+	return -EINVAL;
+}
+
+static ssize_t eth_tx_latency_show(struct device *dev,
+				   struct device_attribute *attr, char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u64 val = 0;
+
+	if (netif_running(netdev))
+	{
+		val = readq(priv->ioaddr + 0xd60);
+		return sprintf(buf, fmt_u64, val);
+	}
+
+	return -EINVAL;
+}
+static DEVICE_ATTR_RW(eth_tx_latency);
+
+static ssize_t eth_rx_latency_store(struct device *dev, struct device_attribute *attr,
+				    const char *buf, size_t len)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u64 val = 0;
+
+	if (netif_running(netdev)) {
+		if(!(kstrtoull(buf, 0, &val))) {
+			writeq(val, priv->ioaddr + 0xd58);
+			return (ssize_t)len;
+		}
+	}
+        return -EINVAL;
+}
+
+static ssize_t eth_rx_latency_show(struct device *dev,
+                                   struct device_attribute *attr, char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u64 val;
+
+	if (netif_running(netdev)) {
+		val = readq(priv->ioaddr + 0xd58);
+		return sprintf(buf, fmt_u64, val);
+	}
+	return -EINVAL;
+}
+static DEVICE_ATTR_RW(eth_rx_latency);
+
+static ssize_t mrphy_efifo_rx_delay_show(struct device *dev,
+					 struct device_attribute *attr, char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u32 rx_lat;
+
+	if ((netif_running(netdev)) && (priv->plat->mrphy_get_efifo_rx_latency)) {
+		if(!(priv->plat->mrphy_get_efifo_rx_latency(priv->plat->bsp_priv,
+							    &rx_lat)))
+			return sprintf(buf, fmt_uint, rx_lat);
+	}
+	return -EINVAL;
+}
+static DEVICE_ATTR_RO(mrphy_efifo_rx_delay);
+
+static ssize_t mrphy_efifo_tx_delay_show(struct device *dev,
+					 struct device_attribute *attr, char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u32 tx_lat;
+
+	if ((netif_running(netdev)) && (priv->plat->mrphy_get_efifo_tx_latency)) {
+		if(!(priv->plat->mrphy_get_efifo_tx_latency(priv->plat->bsp_priv,
+							    &tx_lat)))
+			return sprintf(buf, fmt_uint, tx_lat);
+	}
+	return -EINVAL;
+}
+static DEVICE_ATTR_RO(mrphy_efifo_tx_delay);
+
+static ssize_t mrphy_pcs_rx_delay_show(struct device *dev,
+				       struct device_attribute *attr,
+				       char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u32 rx_lat;
+
+	if ((netif_running(netdev)) && (priv->plat->mrphy_get_pcs_rx_latency)) {
+		if(!(priv->plat->mrphy_get_pcs_rx_latency(priv->plat->bsp_priv, &rx_lat)))
+			return sprintf(buf, fmt_uint, rx_lat);
+	}
+	return -EINVAL;
+}
+static DEVICE_ATTR_RO(mrphy_pcs_rx_delay);
+
+static ssize_t mrphy_pcs_tx_delay_show(struct device *dev,
+				       struct device_attribute *attr,
+				       char *buf)
+{
+	struct net_device *netdev = to_net_dev(dev);
+	struct stmmac_priv *priv = netdev_priv(netdev);
+	u32 tx_lat;
+
+	if ((netif_running(netdev)) && (priv->plat->mrphy_get_pcs_tx_latency)) {
+		if(!(priv->plat->mrphy_get_pcs_tx_latency(priv->plat->bsp_priv, &tx_lat)))
+			return sprintf(buf, fmt_uint, tx_lat);
+	}
+	return -EINVAL;
+}
+static DEVICE_ATTR_RO(mrphy_pcs_tx_delay);
+
 static ssize_t threaded_store(struct device *dev,
 			      struct device_attribute *attr,
 			      const char *buf, size_t len)
@@ -675,6 +804,12 @@ static struct attribute *net_class_attrs[] __ro_after_init = {
 	&dev_attr_carrier_up_count.attr,
 	&dev_attr_carrier_down_count.attr,
 	&dev_attr_threaded.attr,
+	&dev_attr_eth_tx_latency.attr,
+	&dev_attr_eth_rx_latency.attr,
+	&dev_attr_mrphy_efifo_rx_delay.attr,
+	&dev_attr_mrphy_efifo_tx_delay.attr,
+	&dev_attr_mrphy_pcs_rx_delay.attr,
+	&dev_attr_mrphy_pcs_tx_delay.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(net_class);
