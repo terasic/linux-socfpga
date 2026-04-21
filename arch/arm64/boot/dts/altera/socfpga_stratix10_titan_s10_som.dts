@@ -139,6 +139,7 @@
 &usb0 {
 	status = "okay";
 	disable-over-current;
+	compatible = "intel,socfpga-agilex-hsotg", "snps,dwc2";
 };
 
 &watchdog0 {
