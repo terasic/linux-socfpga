@@ -133,6 +133,11 @@
 	status = "okay";
 };
 
+&usb31 {
+	status = "okay";
+	dr_mode = "host";
+};
+
 &watchdog0 {
 	status = "okay";
 };
